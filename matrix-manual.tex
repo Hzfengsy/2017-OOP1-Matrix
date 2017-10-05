@@ -1,0 +1,214 @@
+\documentclass[12pt, a4paper]{article}
+\usepackage{ctex}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{clrscode}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{amsmath}
+\definecolor{bgGray}{RGB}{36, 36, 36}
+\usepackage{supertabular}
+\usepackage[
+  colorlinks,
+  linkcolor=bgGray,
+  anchorcolor=blue,
+  citecolor=green
+]{hyperref}
+\usepackage{listings}
+\usepackage{fontspec}
+\newfontfamily\courier{Courier}
+\usepackage{xcolor}
+
+\newcommand{\ilc}{\texttt}
+
+\title{OOP大作业-Matrix}
+\author{负责助教：冯思远\\场外助教组：任云玮}
+\date{}
+
+\begin{document}
+\lstset{numbers=left,
+  basicstyle=\scriptsize\courier,
+  numberstyle=\tiny\courier\color{red!89!green!36!blue!36},
+  language=C++,
+  breaklines=true,
+  keywordstyle=\color{blue!70},commentstyle=\color{red!50!green!50!blue!50},
+  morekeywords={},
+  stringstyle=\color{purple},
+  frame=shadowbox,
+  rulesepcolor=\color{red!20!green!20!blue!20}
+}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{概要}
+  这是课程[程序设计 2017]的OOP大作业，请同学们按照文档中的要求，
+  完成文件\ilc{Matrix.hpp}中的内容并回答相关问题（粗体内容）。
+  
+\section{实现要求}
+  \begin{enumerate}
+  	\item A班：手动维护一维数据结构，以行优先方式实现二维表示，禁止使用vector、deque等\textbf{任何STL容器}，需通过正确性测试和鲁棒性测试。
+  	\item B班：无任何限制，仅需通过正确性测试。
+  	\item \textbf{强烈建议但不强制}B班有基础同学完成所有或部分A班要求。
+  \end{enumerate}
+
+\section{接口}
+
+\subsection{构造函数与赋值}
+  %回答问题：\textbf{为什么不把矩阵的大小作为模板参数？明明这样做的话，虽然
+  %不能\ilc{resize}，但可以在编译期就检查到诸如不合法乘法的错误。}
+  \begin{enumerate}
+    \item 默认构造函数；
+    \item \ilc{Matrix(std::size\_t n, std::size\_t m, T init = T())}，
+    构造一个大小为$n\times m$的矩阵，并将里面的每个元素初始化为\ilc{init}
+    \item \ilc{Matrix(std::initializer\_list<std::initializer\_list<T>>)}，
+    利用给定的\\\ilc{initializer\_list}来构造一个矩阵。
+    \item “拷贝”构造函数与赋值。要求如果可以用一个\ilc{T}来构造一个\ilc{V}，
+    则可以使用一个\ilc{Matrix<T>}来构造一个\ilc{Matrix<V>}。
+    \item （仅A班）“移动”构造函数与赋值。仅要求相同类型的移动构造。\textbf{思考：为什么不能跨类型移动}
+  \end{enumerate}
+
+\subsection{元素获取}
+  完成如下两个函数（请务必写对），它们用于获取矩阵的第$i$行$j$列的元素，
+  $0$-based。并说明\textbf{为何需要下述两个重载}
+  \begin{enumerate}
+    \item \ilc{T\& operator()(std::size\_t i, std::size\_t j)}
+    \item \ilc{const T\& operator()(std::size\_t, std::size\_t) const}
+  \end{enumerate}
+  并完成如下两个函数，返回矩阵的第$i$行／列。
+  \begin{enumerate}
+    \item \ilc{Matrix<T> row(std::size\_t i) const}
+    \item \ilc{Matrix<T> column(std::size\_t i) const}
+  \end{enumerate}
+
+\subsection{运算}
+  \subsubsection{一元运算}
+    \begin{enumerate}
+      \item \ilc{-}，对矩阵中每个元素取负。
+      \item \ilc{-=}
+      \item \ilc{+=}
+      \item \ilc{*=}，数乘
+      \item \ilc{Matrix tran() const}，返回当前矩阵的转置矩阵。
+      注：不改变当前矩阵。
+    \end{enumerate}
+    要求对于\ilc{+=}等运算，支持\ilc{Matrix<int>+=}一个\ilc{Matrix<double>}
+
+  \subsubsection{二元运算}
+  \begin{enumerate}
+    \item \ilc{==}，比较两个矩阵是否相同（元素的值相等即可）。
+    \item \ilc{!=}，比较两个矩阵是否不同。
+    \item \ilc{+}，定义为友元函数
+    \item \ilc{-}，定义为友元函数
+    \item \ilc{*}，数乘，定义为友元函数
+    \item \ilc{*}，矩阵乘法，定义为友元函数
+  \end{enumerate}
+  对于\ilc{Matrix<T> a}和\ilc{Matrix<V> b}，若\ilc{T + V}的类型为\ilc{U}，
+  则\ilc{a+b}的返回值类型为\ilc{Matrix<U>}（提示：\ilc{decltype})。回答问题：\textbf{为何要定义为友元函数
+  而非成员函数}
+
+\subsection{迭代器}
+  要求实现一个random\_access的迭代器（具体要求见源代码），以及如下函数。
+  \begin{enumerate}
+    \item \ilc{iterator begin()}
+    \item \ilc{iterator end()}
+    \item \ilc{std::pair<iterator, iterator>}
+    \item \ilc{T\& operator*() const}，返回当前迭代器指向的数据。
+    \item \ilc{T* operator->() const}，返回迭代器的指针。
+    \item \ilc{subMatrix(std::pair<std::size\_t, std::size\_t> l,
+              std::pair<std::size\_t, std::size\_t> r)}.
+    设$M$是当前矩阵的一个子矩阵，\ilc{l}和\ilc{r}分别为它的左上角
+    和右下角在原矩阵中的位置，返回$M$的\ilc{begin()}和\ilc{end()}
+  \end{enumerate}
+
+\subsection{其他}
+  \begin{enumerate}
+    \item \ilc{void clear()}，清空当前矩阵，并释放内存空间。
+    \item \ilc{std::size\_t rowlength()}，返回行数。
+    \item \ilc{std::size\_t columnlength()}，返回列数。
+    \item \ilc{std::pair<std::size\_t, std::size\_t> size() const}，返回\ilc{size}。
+    \item （仅A班）\ilc{void resize(std::size\_t n, std::size\_t m, T \_init = T())}.保留前$n*m$个元素，若元素不足则拿\ilc{\_init}补充，并重新以行优先方式组成新矩阵。若元素个数相同，则不允许重新开设内存空间。
+    \item （仅A班）\ilc{void resize(std::pair<std::size\_t, std::size\_t> sz, T \_init = T())}.要求同上。
+  \end{enumerate}
+
+\section{说明}
+  \begin{enumerate}
+  	\item 整个项目基于C++14标准完成，不清楚如何设置的同学可以咨询助教。
+  	\item 编译命令:g++ test.cpp -o test -std=C++14 -O2 -Wall -lopenblas
+  	\item 尽可能项目中少出现Warning，有助于减少不必要的bug。
+  	\item A、B班的评分分别进行，评分标准以对应班级助教组为准。
+  \end{enumerate}
+
+\newpage
+\section{PolicyIterator（\sout{选做}不做）}
+
+\subsection{说明}
+  本节内容为OOP1作业的选做部分，内容为基于Policy-Based
+  Class Design来设计三类迭代器：RowIterator, ColumnIterator
+  , TraceIterator. 分别用于按行遍历，按列遍历以及遍历对角线。
+  请参考后续章节中的简介或者参考书目\textit{Modern C++ Design},
+  Andrei Alexandrescu.
+  \par 此项内容\sout{选做}不做，\textbf{没有}bonus.
+
+\subsection{Policy-Based Class Design}
+  此节为Policy-Based Class Design的一个简介。\par
+  基于Policy的设计，是为了解决如下的情况。对于库的设计者，通常
+  会需要在各个方面进行权衡取舍，诸如性能和安全性，是否多线程安全
+  等。为了让库的使用者可以根据需求做出选择，一种解决方法是提供所
+  有的可能用到的类。诸如\ilc{ThreadSafePtr, NaivePtr, FastPtr}
+  等等。但是当某一个类的可供选择的特性较多时，不同的选择之间有不
+  同的组合，从而就产生了组合爆炸的问题，如果要提供所有的接口，一
+  方面会产生一定的重复代码，另一方面生产的程序的大小也会相应地膨胀。
+  而基于Policy的设计则是为了解决这样情况。\par
+  基于Policy的设计的宗旨在于，将这些可供选择的特性包装在一些被称为
+  Policy Class的类中，而用户在使用的时候，可以通过选择不同的policy
+  来组合出所需要的类。在实现上，通常采用template来完成。具体可见
+  如下摘录自\textit{Modern C++ Design}中的例子。
+  \begin{lstlisting}
+    template <class T>
+    struct OpNewCreator {
+        static T* Create() {
+            return new T;
+        }
+    };
+
+    template <class T>
+    struct MallocCreator {
+        static T* Create() {
+            void* buf = std::malloc(sizeof(T));
+            if (!buf)
+                return nullptr;
+            return new(buf) T;
+        }
+    };
+
+    template <template<class Created> CreationPolicy>
+    class WidgetManager : public CreationPolicy<Widget> {
+        ...
+    };
+
+    // Application Code
+    typedef WidgetManager<OpNewCreator> MyWidgetMgr;
+
+  \end{lstlisting}
+
+\subsection{要求}
+  完成迭代器\ilc{PolicyIterator<Policy>}以及相应的Policy:
+  \ilc{RowIterator, ColumnIterator, TraceIterator}.以及
+  相应的\ilc{begin}和\ilc{end}. 具体内容看一眼测试就好啦OvO
+
+
+\newpage
+\section{参考资料}
+  大家有什么问题，可以先查一下这些网站：
+  \begin{enumerate}
+    \item \url{en.cppreference.com/w/}
+    \item \url{www.cplusplus.com}
+    \item \url{stackoverflow.com}
+  \end{enumerate}
+  另外关于迭代器，可以参考候捷所著的《STL源码剖析》。
+  \\关于C++11/14的内容，
+  可以参考Scott Meyers所著的《Effective Modern C++》以及之前提到的
+  网站。
+
+\end{document}
