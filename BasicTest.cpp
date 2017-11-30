@@ -463,14 +463,14 @@ int main()
 	std::string information;
 	for (auto &&testcase : testcases)
 	{
-		std::cerr << testcase.first << ": ";
+		std::cout << testcase.first << ": ";
 		std::tie(result, information) = testcase.second();
 		if (result)
 		{
-			std::cerr << "PASS. " << information << std::endl;
+			std::cout << "PASS. " << information << std::endl;
 		} else
 		{
-			std::cerr << "FAIL. " << information << std::endl;
+			std::cout << "FAIL. " << information << std::endl;
 		}
 	}
 
